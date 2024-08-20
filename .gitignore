@@ -1,6 +1,8 @@
-/bin
-/etc
-/lib
-/share
-/Data
+/pyvenv.cfg
+/Data/synthetic/diabetes/loop_[1-9]/
+/Data/synthetic/diabetes/loop_10/
+/Data/synthetic/heart/loop_[1-9]/
+/Data/synthetic/heart/loop_10/
+/Data/synthetic/obesity/loop_[1-9]/
+/Data/synthetic/heart/loop_10/
 

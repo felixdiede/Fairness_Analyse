@@ -9,74 +9,79 @@ import styleframe
 
 num_features = ["Age", "Height", "Weight", "FCVC", "NCP", "CH2O", "FAF", "TUE"]
 
-os.chdir(r"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Data\synthetic\obesity\obesity_loop_2")
+loop = [4, 5, 6, 7, 8, 9, 10]
 
+for i in loop:
 
-def custom_sort(file_name):
-    if file_name.endswith(".csv"):
-        file_name = file_name[:-4]  # Entferne ".csv"
+    os.chdir(rf"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Data\synthetic\obesity\obesity_1\loop_{i}")
 
-    parts = file_name.split("_")
-    model = parts[1]
+    def custom_sort(file_name):
+        if file_name.endswith(".csv"):
+            file_name = file_name[:-4]  # Entferne ".csv"
 
-    # Überprüfen, ob eine Lambda-Angabe vorhanden ist
-    if len(parts) == 4:
-        epoch = int(parts[2])
-        lambda_value = parts[3]
-    else:  # Kein Lambda vorhanden
-        epoch = int(parts[2])
-        lambda_value = ""  # Leerer String für Lambda
+        parts = file_name.split("_")
+        model = parts[1]
 
-    model_priority = {"tabfairgan": 1, "distcorrgan": 2, "multifairgan": 3, "decaf": 4, "TVAE": 5, "CTGAN": 6}
-    lambda_priority = {"02": 1, "04": 2, "06": 3, "08": 4, "1": 5, "15": 6, "2": 7, "5": 8}
+        # Überprüfen, ob eine Lambda-Angabe vorhanden ist
+        if len(parts) == 4:
+            epoch = int(parts[2])
+            lambda_value = parts[3]
+        else:  # Kein Lambda vorhanden
+            epoch = int(parts[2])
+            lambda_value = ""  # Leerer String für Lambda
 
-    return model_priority.get(model, 99), epoch, lambda_priority.get(lambda_value, 99)
+        model_priority = {"tabfairgan": 1, "distcorrgan": 2, "multifairgan": 3, "decaf": 4, "TVAE": 5, "CTGAN": 6}
+        lambda_priority = {"02": 1, "04": 2, "06": 3, "08": 4, "1": 5, "15": 6, "2": 7, "5": 8}
 
-file_names = os.listdir()
+        return model_priority.get(model, 99), epoch, lambda_priority.get(lambda_value, 99)
 
-sorted_files = sorted(file_names, key=custom_sort)
+    file_names = os.listdir()
 
-all_data = pd.DataFrame()
+    sorted_files = sorted(file_names, key=custom_sort)
 
-for file_path in sorted_files:
-    # Dateinamen ohne Erweiterung extrahieren (für den Report-Namen)
-    file_name = os.path.splitext(os.path.basename(file_path))[0]
+    all_data = pd.DataFrame()
 
-    print(file_name)
+    for file_path in sorted_files:
+        print(f'Loop: {i}')
 
-    data = pd.read_csv(file_path)
+        # Dateinamen ohne Erweiterung extrahieren (für den Report-Namen)
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-    data = pd.get_dummies(data)
+        print(file_name)
 
-    scaler = MinMaxScaler()
-    data[num_features] = scaler.fit_transform(data[num_features])
+        data = pd.read_csv(file_path)
 
-    # Features und Zielvariable trennen
-    X = data.drop("NObeyesdad", axis=1)
-    y = data["NObeyesdad"]
+        data = pd.get_dummies(data)
 
-    # Daten aufteilen
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        scaler = MinMaxScaler()
+        data[num_features] = scaler.fit_transform(data[num_features])
 
-    # Modell trainieren (hier könnte man verschiedene Modelle ausprobieren)
-    model = DecisionTreeClassifier(random_state=42)
-    model.fit(X_train, y_train)
+        # Features und Zielvariable trennen
+        X = data.drop("NObeyesdad", axis=1)
+        y = data["NObeyesdad"]
 
-    # Fairness-Report erstellen und speichern
-    fairness_report = report.compare(
-        test_data=X_test,
-        targets=y_test,
-        protected_attr=X_test["Gender"],
-        models=model,
-        skip_performance=True
-    )
-    report_data = fairness_report.data
+        # Daten aufteilen
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    report_data[file_name] = report_data
+        # Modell trainieren (hier könnte man verschiedene Modelle ausprobieren)
+        model = DecisionTreeClassifier(random_state=42)
+        model.fit(X_train, y_train)
 
-    all_data = pd.concat([all_data, report_data], axis=1)
+        # Fairness-Report erstellen und speichern
+        fairness_report = report.compare(
+            test_data=X_test,
+            targets=y_test,
+            protected_attr=X_test["Gender"],
+            models=model,
+            skip_performance=True
+        )
+        report_data = fairness_report.data
 
-all_data.drop("model 1", axis = 1, inplace = True)
+        report_data[file_name] = report_data
 
-all_data.to_csv(r"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Reports\obesity\Fairness/Report_fairness_obesity_2.csv", index=False)
+        all_data = pd.concat([all_data, report_data], axis=1)
+
+    all_data.drop("model 1", axis = 1, inplace = True)
+
+    all_data.to_excel(rf"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Reports\obesity\Fairness/Report_fairness_obesity_1_{i}.xlsx", index=False)
 

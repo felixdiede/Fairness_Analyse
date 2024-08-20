@@ -7,10 +7,13 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from glob import glob
 import styleframe
 
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+
+
 num_features = ["Age", "RestingBP", "Cholesterol", "MaxHR", "Oldpeak"]
 
-data = pd.read_csv(r"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Data\synthetic/heart/heart_2/heart_tvae_100.csv")
-
+data = pd.read_csv(r"C:\Users\Felix\PycharmProjects\Fairness\.venv\Data_Analysis\Data\synthetic/heart/heart_1/loop_1/heart_tvae_100.csv")
 data["Gender"] = data["Gender"].apply(lambda x: 0 if x == "F" else 1)
 
 data = pd.get_dummies(data)
@@ -32,6 +35,10 @@ fairness_report = report.compare(
     protected_attr = X_test["Gender"],
     models = model,
     skip_performance = True
+)
+
+fairness_report_2 = measure.bias(
+    X_test[['Gender']], y_test, model.predict(X_test)
 )
 
 results = fairness_report.data
